@@ -5,7 +5,7 @@ buildwin:
 	-upx -9 sylerwin.exe
 buildamd:
 	-rm syleramd
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o syleramd ./syler.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o syleramd ./syler.go
 	-upx -9 syleramd
 clear:
 	-rm *.upx
