@@ -5,7 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/binary"
 	"fmt"
-	"github.com/extrame/syler/huawei/portal"
+	"github.com/godaner/syler/huawei/portal"
 	"net"
 )
 
@@ -135,7 +135,7 @@ func (msg *T_Message) Bytes() []byte {
 // }
 
 func (t *T_Message) CheckFor(req portal.Message, secret string) error {
-	if t.Header.ErrCode == 0 { //Normal
+	if t.Header.ErrCode == 0 { // Normal
 		return nil
 	}
 	reqMsg := req.(*T_Message)
@@ -178,7 +178,7 @@ func (t *T_Message) CheckFor(req portal.Message, secret string) error {
 
 type T_Header struct {
 	Version       byte
-	Type          byte //REQ_CHALLENGE,ACK_CHALLENGE,REQ_AUTH,
+	Type          byte // REQ_CHALLENGE,ACK_CHALLENGE,REQ_AUTH,
 	Pap           byte
 	Rsv           byte
 	SerialNo      uint16

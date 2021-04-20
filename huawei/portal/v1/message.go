@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/extrame/syler/huawei/portal"
+	"github.com/godaner/syler/huawei/portal"
 	"net"
 )
 
@@ -102,7 +102,7 @@ func (t *T_Message) CheckFor(msg portal.Message, secret string) error {
 
 type T_Header struct {
 	Version       byte
-	Type          byte //REQ_CHALLENGE,ACK_CHALLENGE,REQ_AUTH,
+	Type          byte // REQ_CHALLENGE,ACK_CHALLENGE,REQ_AUTH,
 	Pap           byte
 	Rsv           byte
 	SerialNo      uint16

@@ -1,7 +1,7 @@
 package component
 
 import (
-	"github.com/extrame/syler/config"
+	"github.com/godaner/syler/config"
 	"log"
 	"os"
 	"path/filepath"

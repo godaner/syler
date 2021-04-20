@@ -11,7 +11,7 @@ var (
 	RadiusAuthPort      = toml.Int("radius.port", 1812)
 	RadiusAccPort       = toml.Int("radius.acc_port", 1813)
 	RadiusSecret        = toml.String("radius.secret", "testing123")
-	HttpPort            = toml.Int("http.port", 8080)
+	HttpPort            = toml.Int("http.port", 9090)
 	HttpWhiteList       = toml.String("http.white_list", "")
 	RandomUser          = toml.Bool("basic.random_user", true)
 	LogFile             = toml.String("basic.logfile", "")

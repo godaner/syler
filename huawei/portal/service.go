@@ -56,6 +56,7 @@ type Version interface {
 	IsResponse(Message) bool
 	NewChallenge(net.IP, string) Message
 	NewAuth(net.IP, string, []byte, []byte, uint16, []byte) Message
+	NewPapAuth(net.IP, []byte, []byte, uint16, net.HardwareAddr) Message
 	NewAffAckAuth(net.IP, string, uint16, uint16) Message
 	NewLogout(net.IP, string) Message
 	NewReqInfo(net.IP, string) Message
@@ -105,6 +106,7 @@ func Send(mess Message, dest net.IP, port int, secret string, sync bool) (Messag
 		delete(expect, mess.SerialId())
 	}()
 	receiver, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", dest.String(), port))
+	fmt.Println("before send portal:",receiver)
 	conn.WriteTo(mess.Bytes(), receiver)
 	if err != nil {
 		return nil, err
@@ -128,9 +130,14 @@ func Challenge(userip net.IP, secret string, basip net.IP, basport int) (res Mes
 	return Send(cha, basip, basport, secret, true)
 }
 
-func Logout(userip net.IP, secret string, basip net.IP, basport int) (res Message, err error) {
-	cha := Ver.NewLogout(userip, secret)
+func Logout(userip net.IP, secret string, basip net.IP, basport int,usermac string) (res Message, err error) {
+	cha := Ver.NewLogout(userip, usermac)
 	return Send(cha, basip, basport, secret, true)
+}
+
+func PapAuthWithMac(userip net.IP, basip net.IP, basport int, username, userpwd []byte, reqid uint16, mac net.HardwareAddr) (res Message, err error) {
+	auth := Ver.NewPapAuth(userip, username, userpwd, reqid, mac)
+	return Send(auth, basip, basport, "", true)
 }
 
 func ChapAuth(userip net.IP, secret string, basip net.IP, basport int, username, userpwd []byte, reqid uint16, cha []byte) (res Message, err error) {

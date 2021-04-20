@@ -5,8 +5,9 @@ import (
 	"crypto/md5"
 	"encoding/binary"
 	"fmt"
-	"github.com/extrame/syler/huawei/portal"
 	"net"
+
+	"github.com/godaner/syler/huawei/portal"
 )
 
 type Version struct{}
@@ -46,6 +47,9 @@ func (v *Version) NewAuth(userip net.IP, secret string, username []byte, userpwd
 	return msg
 }
 
+func (v *Version) NewPapAuth(userip net.IP, username []byte, userpwd []byte, req uint16, mac net.HardwareAddr) portal.Message {
+	return nil
+}
 func (v *Version) NewReqInfo(userip net.IP, secret string) portal.Message {
 	msg := newMessage(portal.REQ_INFO, userip, portal.NewSerialNo(), 0)
 	msg.Header.AttrNum = 2

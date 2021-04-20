@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/binary"
-	"github.com/extrame/syler/huawei/portal"
 	"net"
+
+	"github.com/godaner/syler/huawei/portal"
 )
 
 type Version struct{}
@@ -14,8 +15,14 @@ func (v *Version) NewChallenge(userip net.IP, secret string) portal.Message {
 	return newMessage(portal.REQ_CHALLENGE, userip, secret, portal.NewSerialNo(), 0)
 }
 
-func (v *Version) NewLogout(userip net.IP, secret string) portal.Message {
-	return newMessage(portal.REQ_LOGOUT, userip, secret, portal.NewSerialNo(), 0)
+func (v *Version) NewLogout(userip net.IP, mac string) portal.Message {
+	msg := newMessage(portal.REQ_LOGOUT, userip, "", portal.NewSerialNo(), 0)
+
+	msg.Header.AttrNum = 1
+	msg.Attrs = []T_Attr{
+		{AttrType: byte(0xE0), AttrLen: byte(len(mac)), AttrStr: []byte(mac)},
+	}
+	return msg
 }
 
 func (v *Version) NewAffAckAuth(userip net.IP, secret string, serial uint16, reqid uint16) portal.Message {
@@ -90,6 +97,19 @@ func (v *Version) NewAuth(userip net.IP, secret string, username []byte, userpwd
 		{AttrType: byte(1), AttrLen: byte(len(username)), AttrStr: username},
 		{AttrType: byte(3), AttrLen: byte(len(cha)), AttrStr: cha},
 		{AttrType: byte(4), AttrLen: byte(len(cpwd)), AttrStr: cpwd},
+	}
+	return msg
+}
+
+// NewPapAuth NewPapAuth
+func (v *Version) NewPapAuth(userip net.IP, username []byte, userpwd []byte, req uint16, mac net.HardwareAddr) portal.Message {
+	msg := newMessage(3, userip, "", portal.NewSerialNo(), req)
+	msg.Header.Pap = 1
+	msg.Header.AttrNum = 3
+	msg.Attrs = []T_Attr{
+		{AttrType: byte(1), AttrLen: byte(len(username)), AttrStr: username},
+		{AttrType: byte(2), AttrLen: byte(len(userpwd)), AttrStr: userpwd},
+		{AttrType: byte(0xe0), AttrLen: byte(len(mac)), AttrStr: mac},
 	}
 	return msg
 }

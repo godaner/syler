@@ -1,6 +1,37 @@
 <h1>欢迎使用Syler开源华为服务器</h1>
-<form method="post" action="/login">
-	<label for="">用户IP</label><input id="userip" type="text" name="userip"><br/>
-	<label for="">NAS IP</label><input id="nas" type="text" name="nas"><br/>
+<form method="post" action="/paplogin">
+	<label for="">账号</label><input id="username" type="text" name="username"><br/>
+	<label for="">密码</label><input id="password" type="password" name="userpwd"><br/>
+	<input id="wlanuserip" type="hidden" name="userip"><br/>
+	<input id="wlanusermac" type="hidden" name="usermac"><br/>
+	<input id="wlannasip" type="hidden" name="nasip"><br/>
 	<input type="submit">
 </form>
+
+
+<form method="post" action="/logout">
+    <label for="">ip</label><input id="userip" type="text" name="userip"><br/>
+    <label for="">mac</label><input id="usermac" type="text" name="usermac"><br/>
+    <label for="">wlannasip</label><input id="nasip" type="text" name="nasip"><br/>
+    <input type="submit">
+</form>
+
+<script>
+var parseQuery = function(query){
+    var reg = /([^=&\s]+)[=\s]*([^=&\s]*)/g;
+    var obj = {};
+    while(reg.exec(query)){
+        obj[RegExp.$1] = RegExp.$2;
+    }
+	console.log("params = ", obj)
+    return obj;
+}
+
+query = window.location.search.substring(1);
+
+prarms = parseQuery(query)
+document.getElementById("wlanuserip").value = prarms['wlanuserip'];
+document.getElementById("wlanusermac").value = prarms['wlanusermac'];
+document.getElementById("wlannasip").value = prarms['wlannasip'];
+
+</script>

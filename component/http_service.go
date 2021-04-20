@@ -2,10 +2,11 @@ package component
 
 import (
 	"fmt"
-	"github.com/extrame/syler/config"
-	"github.com/extrame/syler/i"
 	"log"
 	"net/http"
+
+	"github.com/godaner/syler/config"
+	"github.com/godaner/syler/i"
 )
 
 func StartHttp() {
@@ -17,6 +18,17 @@ func StartHttp() {
 			handler.HandleLogin(w, r)
 		} else {
 			BASIC_SERVICE.HandleLogin(w, r)
+		}
+	})
+	http.HandleFunc("/paplogin", func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			i.ErrorWrap(w)
+		}()
+		fmt.Println("xxxxxxxxxxxxxxxxxxxxx")
+		if handler, ok := i.ExtraAuth.(i.HttpLoginHandler); ok {
+			handler.HandleLogin(w, r)
+		} else {
+			BASIC_SERVICE.HandlePapLogin(w, r)
 		}
 	})
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {

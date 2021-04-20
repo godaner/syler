@@ -4,15 +4,15 @@ import (
 	"flag"
 	"fmt"
 	toml "github.com/extrame/go-toml-config"
-	"github.com/extrame/syler/component"
-	"github.com/extrame/syler/config"
+	"github.com/godaner/syler/component"
+	"github.com/godaner/syler/config"
 	"path/filepath"
 )
 
 func main() {
-	//http server
-	//radius avp server
-	//radius accounting server
+	// http server
+	// radius avp server
+	// radius accounting server
 
 	// go func() {
 	// 	res, err := v1.Challenge(net.IPv4(192, 168, 10, 254), *config.PortalSecret, net.IPv4(192, 168, 56, 2))

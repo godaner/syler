@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/extrame/radius"
-	"github.com/extrame/syler/config"
-	"github.com/extrame/syler/i"
+	"github.com/godaner/syler/config"
+	"github.com/godaner/syler/i"
 	"log"
 	"net"
 	"strings"
@@ -100,7 +100,7 @@ func (p *AuthService) Authenticate(request *radius.Packet) (*radius.Packet, erro
 	msg := "ok!"
 	var err = fmt.Errorf("unhandled")
 	var timeout uint32
-	//for mac test
+	// for mac test
 	testedUserName := strings.Replace(callingStationId.String(), ":", "", -1)
 	if strings.ToLower(string(username)) == testedUserName {
 		log.Printf("Request to auth mac %s\n", testedUserName)
@@ -110,7 +110,7 @@ func (p *AuthService) Authenticate(request *radius.Packet) (*radius.Packet, erro
 			err, timeout = BASIC_SERVICE.AuthMac(callingStationId, userip)
 		}
 	}
-	//for user name test
+	// for user name test
 	if err != nil {
 		if chapmod {
 			if auth, ok := i.ExtraAuth.(i.ChapAuthService); ok {

@@ -1,5 +1,9 @@
 syler
 =====
+来源于 github.com/godaner/syler
+请下载到 gopath github.com/godaner/syler 目录下运行
+
+
 
 Syler Hua Wei Portal Middleware
 
@@ -18,7 +22,7 @@ WX5000
 ## 下载
 ### 从源码安装
 
-* go get github.com/extrame/syler
+* go get github.com/godaner/syler
 
 ## 注意
 本开源包仅供非商业使用

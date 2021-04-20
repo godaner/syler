@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"github.com/extrame/syler/config"
-	"github.com/extrame/syler/i"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"strconv"
+
+	"github.com/godaner/syler/config"
+	"github.com/godaner/syler/i"
 )
 
 type AuthInfo struct {
@@ -68,6 +69,7 @@ func (a *AuthServer) HandleLogin(w http.ResponseWriter, r *http.Request) {
 			nas = *config.NasIp
 		}
 		userip_str := r.FormValue("userip")
+		// usermac_str := r.FormValue("usermac")
 		username := []byte(r.FormValue("username"))
 		userpwd := []byte(r.FormValue("userpwd"))
 		var to uint64
@@ -127,16 +129,99 @@ func (a *AuthServer) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//处理Logout请求
+// pap login with usermac
+func (a *AuthServer) HandlePapLogin(w http.ResponseWriter, r *http.Request) {
+	var err error
+	fmt.Println("yyyy", config.IsValidClient(r.RemoteAddr))
+	if config.IsValidClient(r.RemoteAddr) {
+		timeout := r.FormValue("timeout")
+		nas := r.FormValue("nasip")
+		if *config.NasIp != "" {
+			nas = *config.NasIp
+		}
+		userip_str := r.FormValue("userip")
+		usermac_str := r.FormValue("usermac")
+		usermac, macerr := net.ParseMAC(usermac_str)
+		fmt.Println("usermac = ", usermac)
+		fmt.Println("macerr = ", macerr)
+		if macerr != nil {
+			err = fmt.Errorf("Mac错误！请联系管理员")
+		}
+		username := []byte(r.FormValue("username"))
+		userpwd := []byte(r.FormValue("userpwd"))
+		var to uint64
+		to, err = strconv.ParseUint(timeout, 10, 32)
+
+		if to == 0 && *config.DefaultTimeout != 0 {
+			to = *config.DefaultTimeout
+		}
+
+		userip := net.ParseIP(userip_str)
+		if *config.UseRemoteIpAsUserIp == true {
+			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+			userip = net.ParseIP(ip)
+		} else if userip == nil {
+			u_refer := r.Header.Get("Referer")
+			var u *url.URL
+			if u, err = url.Parse(u_refer); err == nil {
+				if uip := u.Query().Get("userip"); uip != "" {
+					userip = net.ParseIP(userip_str)
+				} else {
+					err = fmt.Errorf("请求解析Referer错误")
+				}
+			} else {
+				err = fmt.Errorf("配置错误！请联系管理员")
+			}
+		}
+		var full_username []byte
+		fmt.Println("userip = ", userip)
+		if userip != nil {
+			if basip := net.ParseIP(nas); basip != nil {
+				log.Printf("got a login request from %s on nas %s\n", userip, basip)
+				if len(username) == 0 {
+					if *config.RandomUser {
+						full_username, userpwd = a.RandomUser(userip, basip, *config.HuaweiDomain, uint32(to))
+					} else {
+						w.WriteHeader(http.StatusBadRequest)
+						return
+					}
+				} else {
+					full_username = []byte(string(username)) // + "@" + *config.HuaweiDomain)
+					a.authing_user[userip.String()] = &AuthInfo{username, userpwd, []byte{}, uint32(to)}
+				}
+				fmt.Println("before PapAuth")
+				if err = PapAuth(userip, basip, uint32(to), []byte(full_username), userpwd, usermac); err == nil {
+					w.Write([]byte(a.authing_user[userip.String()].Mac.String()))
+					return
+				}
+			} else {
+				err = fmt.Errorf("NAS IP配置错误")
+			}
+		}
+	} else {
+		err = fmt.Errorf("该IP不在配置可允许的用户中")
+	}
+	if err != nil {
+		log.Println("login error: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+	}
+}
+
+// 处理Logout请求
 func (a *AuthServer) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	var err error
-	nas := r.FormValue("nasip") //TODO
+	nas := r.FormValue("nasip") // TODO
 	userip_str := r.FormValue("userip")
+	usermac := r.FormValue("usermac")
+	fmt.Println("nasip:", nas)
 	if userip := net.ParseIP(userip_str); userip != nil {
 		if basip := net.ParseIP(nas); basip != nil {
-			if _, err = Logout(userip, *config.HuaweiSecret, basip); err == nil {
+			if _, err = Logout(userip, *config.HuaweiSecret, basip, usermac); err == nil {
 				w.WriteHeader(http.StatusOK)
 				return
+			} else {
+				fmt.Errorf(err.Error())
 			}
 		} else {
 			err = fmt.Errorf("Parse Ip err from %s", nas)

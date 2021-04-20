@@ -2,13 +2,14 @@ package component
 
 import (
 	"fmt"
-	"github.com/extrame/syler/config"
-	"github.com/extrame/syler/huawei/portal"
-	"github.com/extrame/syler/huawei/portal/v1"
-	"github.com/extrame/syler/huawei/portal/v2"
 	"log"
 	"net"
 	"net/http"
+
+	"github.com/godaner/syler/config"
+	"github.com/godaner/syler/huawei/portal"
+	"github.com/godaner/syler/huawei/portal/v1"
+	"github.com/godaner/syler/huawei/portal/v2"
 )
 
 func StartHuawei() {
@@ -32,6 +33,17 @@ func Challenge(userip net.IP, basip net.IP) (response portal.Message, err error)
 	return portal.Challenge(userip, *config.HuaweiSecret, basip, *config.HuaweiNasPort)
 }
 
+func PapAuth(userip net.IP, basip net.IP, timeout uint32, username, userpwd []byte, mac net.HardwareAddr) (err error) {
+	var res portal.Message
+
+	// PAP 认证中，reqid为0
+	res, err = portal.PapAuthWithMac(userip, basip, *config.HuaweiNasPort, username, userpwd, 0, mac)
+	if err == nil {
+		res, err = portal.AffAckAuth(userip, *config.HuaweiSecret, basip, *config.HuaweiNasPort, res.SerialId(), res.ReqId())
+	}
+	return
+}
+
 func Auth(userip net.IP, basip net.IP, timeout uint32, username, userpwd []byte) (err error) {
 	var res portal.Message
 	if res, err = Challenge(userip, basip); err == nil {
@@ -45,8 +57,8 @@ func Auth(userip net.IP, basip net.IP, timeout uint32, username, userpwd []byte)
 	return
 }
 
-func Logout(userip net.IP, secret string, basip net.IP) (response portal.Message, err error) {
-	return portal.Logout(userip, *config.HuaweiSecret, basip, *config.HuaweiNasPort)
+func Logout(userip net.IP, secret string, basip net.IP, usermac string) (response portal.Message, err error) {
+	return portal.Logout(userip, *config.HuaweiSecret, basip, *config.HuaweiNasPort, usermac)
 }
 
 func callBackOffline(url string, userip, netip net.IP) {
